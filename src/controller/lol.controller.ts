@@ -1,12 +1,14 @@
-const token = "RGAPI-e35e04fb-92aa-4b32-8be5-0ca8c031712b";
+const token = "RGAPI-0eaa805f-2f0f-49ee-bf3b-9d028f2ed9c4";
+
+let puuid = ""
 
 async function getPuuID(gameName, tagLine) {
     const userData = await fetch(`https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}`,
-        {headers: {"X-Riot-Token": token }}).then((data)=> data.json());
-
-    return userData.puuid;
+        {headers: {"X-Riot-Token": token }}).then((data)=> data.json()).then(data => puuid = data.puuid);
 }
 
-const puuid = getPuuID("zYoshio", "BR1");
-puuid.then(item => console.log(item))
-
+(async () =>{
+    await getPuuID("zYoshio", "BR1")
+    console.log(puuid)
+}
+)()
