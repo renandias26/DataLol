@@ -1,5 +1,5 @@
 import { writeFile } from 'fs/promises'
-const token = "RGAPI-a0f0b2c0-505a-4c8c-be82-ec5a5d8874b3";
+const token = "RGAPI-006a2331-72c5-4156-ad6f-a4376e8e47f8";
 
 function fetchRiotAPI(url) {
     return fetch(
@@ -21,14 +21,13 @@ async function getMatchID(quantity, puuid) {
 }
 
 async function getMatchData(matchID, puuid) {
-    console.log(matchID);
     const matchesDataProm = matchID.map((item) => {
         return fetchRiotAPI(`https://americas.api.riotgames.com/lol/match/v5/matches/${item}`).then((response) => {
             return response;
         })
     }); 
     const matchesData = await Promise.all(matchesDataProm)
-    return matchesData.map((item) => {
+    return matchesData.filter((match) =>  match.info.gameMode == 'CLASSIC').map((item) => {
         const participantIndex = item.metadata.participants.indexOf(puuid);
         return {
             matchId: item.metadata.matchId,
