@@ -1,48 +1,35 @@
 import { writeFile } from 'fs/promises'
-const token = "RGAPI-006a2331-72c5-4156-ad6f-a4376e8e47f8";
-
-function fetchRiotAPI(url) {
-    return fetch(
-        url,
-        {
-            headers: { "X-Riot-Token": token }
-        }
-    ).then((data) => data.json());
-}
+import lolModel from '../model/lol.model.js'
 
 async function getPuuID(gameName, tagLine) {
-    const data = await fetchRiotAPI(`https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}`);
-    return data.puuid;
+    return lolModel.getPlayerData(gameName, tagLine).then(item => item.puuid);
 }
 
 async function getMatchID(quantity, puuid) {
-    const matchID = await fetchRiotAPI(`https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/${puuid}/ids?start=0&count=${quantity}`);
-    return matchID;
+    return lolModel.getMatchID(quantity, puuid);
 }
 
 async function getMatchData(matchID, puuid) {
-    const matchesDataProm = matchID.map((item) => {
-        return fetchRiotAPI(`https://americas.api.riotgames.com/lol/match/v5/matches/${item}`).then((response) => {
-            return response;
+    const matchesDataProm = matchID.map(data => lolModel.getMatchData(data))
+    return Promise.all(matchesDataProm).then(data => {
+        return data.filter((match) => match.info.gameMode == 'CLASSIC').map((item) => {
+            const participantIndex = item.metadata.participants.indexOf(puuid);
+            const participantData = item.info.participants[participantIndex];
+            return {
+                matchId: item.metadata.matchId,
+                gameMode: item.info.gameMode,
+                gameType: item.info.gameType,
+                puuid: participantData.puuid,
+                win: participantData.win,
+                kda: participantData.challenges.kda,
+                individualPosition: participantData.individualPosition,
+                championId: participantData.championId,
+                championName: participantData.championName,
+                teamPosition: participantData.teamPosition,
+                role: participantData.role,
+                lane: participantData.lane
+            }
         })
-    }); 
-    const matchesData = await Promise.all(matchesDataProm)
-    return matchesData.filter((match) =>  match.info.gameMode == 'CLASSIC').map((item) => {
-        const participantIndex = item.metadata.participants.indexOf(puuid);
-        return {
-            matchId: item.metadata.matchId,
-            gameMode: item.info.gameMode,
-            gameType: item.info.gameType,
-            puuid: item.info.participants[participantIndex].puuid,
-            win: item.info.participants[participantIndex].win,
-            kda: item.info.participants[participantIndex].challenges.kda,
-            individualPosition: item.info.participants[participantIndex].individualPosition,
-            championId: item.info.participants[participantIndex].championId,
-            championName: item.info.participants[participantIndex].championName,
-            teamPosition: item.info.participants[participantIndex].teamPosition,
-            role: item.info.participants[participantIndex].role,
-            lane: item.info.participants[participantIndex].lane
-        }
     })
 }
 
@@ -50,6 +37,6 @@ async function getMatchData(matchID, puuid) {
     const puuid = await getPuuID("zYoshio", "BR1");
     const matchID = await getMatchID(20, puuid);
     const data = await getMatchData(matchID, puuid);
-    await writeFile("data.json" ,JSON.stringify(data, null, 2));
+    await writeFile("data.json", JSON.stringify(data, null, 2));
 }
 )()
