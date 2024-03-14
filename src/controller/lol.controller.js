@@ -70,7 +70,7 @@ async function getLaneData() {
         }
         return acc;
     }, {});
-    console.log(result);
+    
     return result;
 }
 
