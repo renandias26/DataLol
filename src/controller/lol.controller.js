@@ -1,6 +1,16 @@
 import { writeFile } from 'fs/promises'
 import lolModel from '../model/lol.model.js'
 
+async function getPlayerData(playerName) {
+    const hashtagIndex = playerName?.indexOf("#")
+    const nickname = player.slice(0, hashtagIndex);
+    const tag = player.slice(hashtagIndex + 1);
+
+    const puuid = await getPuuID(nickname, tag);
+    const matchID = await getMatchID(20, puuid);
+    return await getMatchData(matchID, puuid);
+}
+
 async function getPuuID(gameName, tagLine) {
     return lolModel.getPlayerData(gameName, tagLine).then(item => item.puuid);
 }
@@ -40,3 +50,5 @@ async function getMatchData(matchID, puuid) {
     await writeFile("data.json", JSON.stringify(data, null, 2));
 }
 )()
+
+export default getPlayerData
