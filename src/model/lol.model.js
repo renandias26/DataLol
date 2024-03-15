@@ -14,7 +14,7 @@ class lolModel {
     }
 
     async getMatchID(quantity, puuid) {
-        return this.fetchRiotAPI(`https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/${puuid}/ids?start=0&count=${quantity}`);
+        return this.fetchRiotAPI(`https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/${puuid}/ids?type=ranked&start=0&count=${quantity}`);
     }
 
     async getMatchData(item) {
