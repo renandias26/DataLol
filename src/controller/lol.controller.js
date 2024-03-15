@@ -1,18 +1,24 @@
-import { writeFile, readFile } from 'fs/promises'
 import lolModel from '../model/lol.model.js'
 
 async function getPlayerData(playerName) {
-    const hashtagIndex = playerName?.indexOf("#")
-    const nickname = player.slice(0, hashtagIndex);
-    const tag = player.slice(hashtagIndex + 1);
-
+    const hashtagIndex = playerName?.indexOf("#");
+    const nickname = playerName?.slice(0, hashtagIndex);
+    const tag = playerName?.slice(hashtagIndex + 1);
     const puuid = await getPuuID(nickname, tag);
     const matchID = await getMatchID(20, puuid);
-    return await getMatchData(matchID, puuid);
+    const matchData = await getMatchData(matchID, puuid);
+    const playerData = await Promise.all([
+        getWinRate(matchData),
+        getLaneData(matchData),
+        getChampionData(matchData)
+    ])
+    return playerData
 }
 
 async function getPuuID(gameName, tagLine) {
-    return lolModel.getPlayerData(gameName, tagLine).then(item => item.puuid);
+    return lolModel.getPlayerData(gameName, tagLine).then(item => item.puuid).catch((err) => {
+        console.log(err);
+    });
 }
 
 async function getMatchID(quantity, puuid) {
@@ -20,7 +26,7 @@ async function getMatchID(quantity, puuid) {
 }
 
 async function getMatchData(matchID, puuid) {
-    const matchesDataProm = matchID.map(data => lolModel.getMatchData(data))
+    const matchesDataProm = matchID?.map(data => lolModel.getMatchData(data))
     return Promise.all(matchesDataProm).then(data => {
         return data.filter((match) => match.info.gameMode == 'CLASSIC').map((item) => {
             const participantIndex = item.metadata.participants.indexOf(puuid);
@@ -43,20 +49,16 @@ async function getMatchData(matchID, puuid) {
     })
 }
 
-async function getWinRate() {
-    const data = JSON.parse(await readFile('data.json', 'utf-8'));
-
+async function getWinRate(playerData) {
     let count = 0;
-    data.map((match) => {
+    playerData.map((match) => {
         if (match.win == true) count++;
     });
-    return (count * 100) / data.length;
+    return (count * 100) / playerData.length;
 }
 
-async function getLaneData() {
-    const data = JSON.parse(await readFile('data.json', 'utf-8'));
-
-    const result = data.reduce((acc, match) => {
+async function getLaneData(playerData) {
+    return playerData.reduce((acc, match) => {
         const position = match.individualPosition;
         const win = match.win;
 
@@ -70,30 +72,18 @@ async function getLaneData() {
         }
         return acc;
     }, {});
-    
-    return result;
 }
 
-async function getChampionData() {
-    const data = JSON.parse(await readFile('data.json', 'utf-8'));
-
-    const result = data.reduce((cont, match) => {
+async function getChampionData(playerData) {
+    return playerData.reduce((cont, match) => {
         cont[match.championName] = (cont[match.championName] || 0) + 1;
         return cont;
     }, {});
-
-    console.log(result);
 }
 
-(async () => {
-    //const puuid = await getPuuID("zYoshio", "BR1");
-    //const matchID = await getMatchID(20, puuid);
-    //const data = await getMatchData(matchID, puuid);
-    //await writeFile("data.json", JSON.stringify(data, null, 2));
-    console.log(await getWinRate());
-    getChampionData()
-    getLaneData();
-}
-)()
+// (async () => {
+//     await getPlayerData("zYoshio#BR1");
+// }
+// )()
 
-export default getPlayerData
+export { getPlayerData }

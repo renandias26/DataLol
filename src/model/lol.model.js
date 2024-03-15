@@ -1,13 +1,12 @@
 class lolModel {
-    token = "RGAPI-3a4b45d2-a826-4db0-b966-4da01ee1e89a";
-
+    token = "RGAPI-0562212c-e2d9-4fe9-a2c2-1255383914ad";
     async fetchRiotAPI(url) {
         return fetch(
             url,
             {
                 headers: { "X-Riot-Token": this.token }
             }
-        ).then(item => item.json());
+        ).then(item => item.json()).catch(err => { console.log(err) });
     }
 
     async getPlayerData(gameName, tagLine) {
