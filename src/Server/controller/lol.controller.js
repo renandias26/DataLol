@@ -5,13 +5,21 @@ async function getPlayerData(playerName) {
     const nickname = playerName?.slice(0, hashtagIndex);
     const tag = playerName?.slice(hashtagIndex + 1);
     const puuid = await getPuuID(nickname, tag);
-    const matchID = await getMatchID(20, puuid);
-    const matchData = await getMatchData(matchID, puuid);
+    if (!puuid) {
+        return 'NickName não existe';
+    }
+    const matchData = await getMatchData(20, puuid);
+    if (!matchData) {
+        return 'Tente Novamente';
+    }
     const playerData = await Promise.all([
         getWinRate(matchData),
         getLaneData(matchData),
         getChampionData(matchData)
     ])
+    if (!playerData) {
+        return 'Tente Novamente';
+    }
     return playerData
 }
 
@@ -25,7 +33,9 @@ async function getMatchID(quantity, puuid) {
     return lolModel.getMatchID(quantity, puuid);
 }
 
-async function getMatchData(matchID, puuid) {
+async function getMatchData(quantity, puuid) {
+    const matchID = await getMatchID(quantity, puuid);
+
     const matchesDataProm = matchID?.map(data => lolModel.getMatchData(data))
     return Promise.all(matchesDataProm).then(data => {
         return data.filter((match) => match.info.gameMode == 'CLASSIC').map((item) => {

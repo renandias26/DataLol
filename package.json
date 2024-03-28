@@ -5,8 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node ./src/server.js",
-    "test": "node ./src/controller/lol.controller.js"
+    "start-front": "node ./src/Client/server.js",
+    "start-back": "node ./src/Server/server.js",
+    "debug-back": "node --inspect ./src/Server/server.js"
   },
   "keywords": [],
   "author": "",

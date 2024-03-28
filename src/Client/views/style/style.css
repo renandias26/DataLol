@@ -60,21 +60,20 @@ h1 {
   color: white;
 }
 
-.search-box{
+.search-box {
   display: center;
 }
 
-.main{
+.main {
   display: center;
   text-align: center;
 }
 
-.logo{
+.logo {
   margin-top: 30px;
   margin-bottom: 10px;
 }
 
-.summonerData{
+.summonerData {
   margin-top: 70px;
 }
-
