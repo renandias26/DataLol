@@ -1,5 +1,5 @@
 class lolModel {
-    token = "RGAPI-7f4429d7-66f9-4bb7-88c4-37e92c12fef3";
+    token = "RGAPI-301f1458-bd71-420d-a2f6-c4aea6020864";
     async fetchRiotAPI(url) {
         return fetch(
             url,
