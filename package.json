@@ -6,8 +6,9 @@
   "type": "module",
   "scripts": {
     "start-front": "node ./src/Client/server.js",
+    "dev-front": "node --watch ./src/Client/server.js",
     "start-back": "node ./src/Server/server.js",
-    "debug-back": "node --inspect ./src/Server/server.js"
+    "debug-back": "node --inspect --watch ./src/Server/server.js"
   },
   "keywords": [],
   "author": "",

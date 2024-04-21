@@ -77,3 +77,13 @@ h1 {
 .summonerData {
   margin-top: 70px;
 }
+
+.custom-popover {
+  padding: 5px ;
+}
+
+.custom-popover img {
+  width: 100%; 
+  height: auto;
+}
+

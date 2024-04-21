@@ -15,11 +15,13 @@ async function getPlayerData(playerName) {
     const playerData = await Promise.all([
         getWinRate(matchData),
         getLaneData(matchData),
-        getChampionData(matchData)
+        getChampionData(matchData),
+        getRecentPlayers(matchData)
     ])
     if (!playerData) {
         return 'Tente Novamente';
     }
+
     return playerData
 }
 
@@ -36,12 +38,28 @@ async function getMatchID(quantity, puuid) {
 async function getMatchData(quantity, puuid) {
     const matchID = await getMatchID(quantity, puuid);
 
-    const matchesDataProm = matchID?.map(data => lolModel.getMatchData(data))
+    const matchesDataProm = matchID?.map(data => lolModel.getMatchData(data));
     return Promise.all(matchesDataProm).then(data => {
-        return data.filter((match) => match.info.gameMode == 'CLASSIC').map((item) => {
+        const participantsData = data
+            .filter(match => match.info.gameMode === 'CLASSIC')
+            .flatMap(match => match.info.participants);
+
+        const playerFrequency = participantsData.reduce((acc, participant) => {
+            acc[participant.riotIdGameName + '#' + participant.riotIdTagline] = (acc[participant.riotIdGameName + '#' + participant.riotIdTagline] || 0) + 1;
+            return acc;
+        }, {});
+
+        const sortedPlayers = Object.entries(playerFrequency)
+            .sort((a, b) => b[1] - a[1])
+            .map(([puuid]) => puuid);
+
+        const topPlayers = sortedPlayers.filter(player => player !== puuid).slice(1, 11);
+
+        return data.map(item => {
             const participantIndex = item.metadata.participants.indexOf(puuid);
             const participantData = item.info.participants[participantIndex];
             return {
+                participants: topPlayers,
                 matchId: item.metadata.matchId,
                 gameMode: item.info.gameMode,
                 gameType: item.info.gameType,
@@ -54,10 +72,11 @@ async function getMatchData(quantity, puuid) {
                 teamPosition: participantData.teamPosition,
                 role: participantData.role,
                 lane: participantData.lane
-            }
-        })
-    })
+            };
+        });
+    });
 }
+
 
 async function getWinRate(playerData) {
     let count = 0;
@@ -85,15 +104,23 @@ async function getLaneData(playerData) {
 }
 
 async function getChampionData(playerData) {
-    return playerData.reduce((cont, match) => {
+    const championCounts = playerData.reduce((cont, match) => {
         cont[match.championName] = (cont[match.championName] || 0) + 1;
         return cont;
     }, {});
+
+    const sortedChampionCounts = Object.entries(championCounts)
+        .sort(([, countA], [, countB]) => countB - countA)
+        .reduce((acc, [championName, count]) => {
+            acc[championName] = count;
+            return acc;
+        }, {});
+
+    return sortedChampionCounts;
 }
 
-// (async () => {
-//     await getPlayerData("zYoshio#BR1");
-// }
-// )()
+async function getRecentPlayers(playerData) {
+    return playerData[0].participants;
+}
 
 export { getPlayerData }

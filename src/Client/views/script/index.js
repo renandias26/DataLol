@@ -72,9 +72,9 @@ function ClearPlayerData() {
 }
 
 function showPlayerData(playerData) {
-    const [winRate, laneData, championData] = playerData
+    const [winRate, laneData, championData, playersData] = playerData
     const dvWinRate = showWinrate(winRate)
-    const dvTables = showTables(laneData, championData)
+    const dvTables = showTables(laneData, championData, playersData)
     document.getElementById("summonerData").append(dvWinRate)
     document.getElementById("summonerData").append(dvTables)
 }
@@ -86,12 +86,14 @@ function showWinrate(winRate) {
     return dvWinRate
 }
 
-function showTables(laneData, championData) {
+function showTables(laneData, championData, playersData) {
     const dvTables = document.createElement('div')
     const dvlaneData = showlaneData(laneData)
     const dvchampionData = showchampionData(championData)
+    const dvplayersData = showplayersData(playersData)
     dvTables.append(dvlaneData)
     dvTables.append(dvchampionData)
+    dvTables.append(dvplayersData)
     dvTables.style.display = "flex";
     dvTables.style.alignItems = "center";
     dvTables.style.justifyContent = "space-evenly"
@@ -99,6 +101,7 @@ function showTables(laneData, championData) {
 }
 
 function showlaneData(laneData) {
+    console.log(laneData);
     const dvlaneData = document.createElement('div')
 
     const tableLane = document.createElement('table')
@@ -190,3 +193,54 @@ function showchampionData(championData) {
 
     return dvchampionData
 }
+
+function showplayersData(playersData) {
+    const dvplayersData = document.createElement('div')
+
+    const tablePlayers = document.createElement('table')
+    tablePlayers.title = "Top Players by Recent Activity"
+    tablePlayers.classList.add('table')
+
+    const headerPlayers = document.createElement('tr')
+    const header = document.createElement('thead')
+
+    const headerPlayersName = document.createElement('th')
+    headerPlayersName.textContent = "Top Players by Recent Activity"
+    headerPlayersName.scope = "col"
+
+    headerPlayers.append(headerPlayersName)
+
+    header.append(headerPlayers)
+    tablePlayers.append(header)
+
+    const body = document.createElement('tbody')
+    console.log(playersData)
+    playersData.forEach(player => {
+        const row = document.createElement('tr');
+        const playerName = document.createElement('td');
+        playerName.textContent = player;
+        row.appendChild(playerName);
+        body.appendChild(row);
+    });
+
+    tablePlayers.append(body)
+
+    dvplayersData.append(tablePlayers)
+
+    return dvplayersData
+}
+
+var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+    return new bootstrap.Popover(popoverTriggerEl)
+})
+
+document.addEventListener('DOMContentLoaded', function () {
+    var popover = new bootstrap.Popover(document.getElementById('popoverBtn'), {
+        html: true,
+        content: function () {
+            return '1 - Acesse sua conta no League Of Legends. <br> 2 - Coloque o mouse em cima do ícone de invocador.<br><br>ex: <img src="./style/images/riot-id-no-lol.png" alt="Descrição da imagem"> ';
+        },
+        template: '<div class="popover custom-popover" role="tooltip"><div class="popover-arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+    });
+});
